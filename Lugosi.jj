@@ -1,23 +1,44 @@
 PARSER_BEGIN(Lugosi)
 import ast.*;
-public class Lugosi {
-    public static void main(String args[]) throws Exception{
-        FileInputStream fs = new FileInputStream(new File(args[0]));
-        Lugosi parser = new Lugosi(fs);
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.PrintWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 
-        Prog arvore = parser.Lugosi();
-        geraCodigo(arvore, args[0]);
+public class Lugosi {
+    public static void main(String args[]) throws Exception {
+      FileInputStream fs = new FileInputStream(new File(args[0]));
+      Lugosi parser = new Lugosi(fs);
+
+      Prog arvore = parser.Lugosi();
+      geraCodigo(arvore, args[0]);
     }
 
     public static void geraCodigo(Prog prog, String arquivo) {
-    try ( PrintWriter out = new PrintWriter( new FileWriter( arquivo + ".c" ) ) ) {
-      prog.geraCodigo(out);
-    } 
-    catch (IOException e) {
-      e.printStackTrace();
+      try (PrintWriter out = new PrintWriter(new FileWriter(arquivo + ".c"))) {
+        // Adicionar cabeçalhos necessários para o programa C
+        out.println("#include <stdio.h>");
+        out.println("#include <stdlib.h>");
+        out.println("#include <stdbool.h>");
+        out.println();
+        
+        // Função main do C
+        out.println("int main() {");
+        
+        // Chamar o geraCodigo da árvore sintática
+        prog.geraCodigo(out);
+        
+        // Fechar a função main
+        out.println("    return 0;");
+        out.println("}");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
 }
-}
+
 
 PARSER_END(Lugosi)
 
@@ -41,6 +62,7 @@ TOKEN :
 | <PV: ";">
 | <LET: "let">
 | <FLOAT: "float">
+| <INT: "int">
 | <BOOL: "bool">
 | <DEF: "def">
 | <IF: "if">
@@ -76,10 +98,10 @@ TOKEN :
 //  { Código Java que cria e retorna um objeto da AST }
 //}
 
-Prog Lugosi(): { Main main = null; ArrayList<Fun> funs = null; }
+Prog Lugosi(): { Main main = null; ArrayList<Fun> funs = new ArrayList<>(); Fun fun = null; }
 {
   main = Main() 
-  ( funs = Funcao() )?
+  ( fun = Func() { funs.add(fun); } )?
   <EOF>
 
   { return new Prog( main,funs ); }
@@ -108,6 +130,7 @@ String Tipo(): { String tipo = null; }
 {
   ( 
     <FLOAT> { tipo = "float"; }
+  | <INT>   { tipo = "int";   }
   | <BOOL>  { tipo = "bool";  }
   | <VOID>  { tipo = "void";  }
   )
@@ -124,32 +147,32 @@ ArrayList<Comando> SeqComandos(): { ArrayList<Comando> comandos = new ArrayList<
   { return comandos; }
 }
 
-Comando Comando(): { Comando comando = null; Token id = null; Exp exp = null; ArrayList<Comando> bloco = null; }
+Comando Comando(): { Comando comando = null; Token id = null; Exp exp = null; ArrayList<Comando> bloco = null; int linha = getToken(1).beginLine; }
 {
   (
-    id = <ID>                                                                             { comando = ComandoID(id); }
-  | <IF> <APARENTESES> Exp() <FPARENTESES> <ACHAVES> SeqComandos() <FCHAVES> <PV>         { comando = new CIf(linha, exp, bloco); }
-  | <WHILE> <APARENTESES> Exp() <FPARENTESES> <DO> <ACHAVES> SeqComandos() <FCHAVES> <PV> { comando = new CWhile(linha, exp, bloco); }
-  | <PRINTIO> Exp() <PV>                                                                  { comando = new CPrint(linha, exp); }
-  | <RETURN> Exp() <PV>                                                                   { comando = new CReturn(linha, exp); }
+    id = <ID>                                                                                           { comando = ComandoID(id); }
+  | <IF> <APARENTESES> exp = Exp() <FPARENTESES> <ACHAVES> bloco = SeqComandos() <FCHAVES> <PV>         { comando = new CIf(linha, exp, bloco); }
+  | <WHILE> <APARENTESES> exp = Exp() <FPARENTESES> <DO> <ACHAVES> bloco = SeqComandos() <FCHAVES> <PV> { comando = new CWhile(linha, exp, bloco); }
+  | <PRINTIO> exp = Exp() <PV>                                                                          { comando = new CPrint(linha, exp); }
+  | <RETURN> exp = Exp() <PV>                                                                           { comando = new CReturn(linha, exp); }
   )
 
   { return comando; }
 }
 
-Comando ComandoID(Token id): { Exp exp = null; ArrayList<Exp> args = null; }
+Comando ComandoID(Token id): { Comando comando = null; Exp exp = null; ArrayList<Exp> args = null; int linha = getToken(1).beginLine; }
 {
   (
     <ATRIB> comando = ComandoAttrib(id)                     { return comando; } 
-  | <APARENTESES> ( args = ListaExp() )? <FPARENTESES> <PV> { return new CChamadaFun( id.image, args ); }
+  | <APARENTESES> ( args = ListaExp() )? <FPARENTESES> <PV> { return new CChamadaFun( linha, id.image, args ); }
   )
 }
 
-Exp ComandoAttrib(Token id):  { Exp exp = null; }
+Comando ComandoAttrib(Token id):  { Exp exp = null; int linha = getToken(1).beginLine; }
 {
   (
-    exp = Exp() <PV>                              { return new CAtribuicao(id.image, exp); }
-  | <READIO> <APARENTESES> <FPARENTESES> <PV>     { return new CReadInput(id.image); }
+    exp = Exp() <PV>                              { return new CAtribuicao( linha, id.image, exp ); }
+  | <READIO> <APARENTESES> <FPARENTESES> <PV>     { return new CReadInput( linha, id.image ); }
   )
 }
 
@@ -170,26 +193,30 @@ String OP(): { String op = null; }
   { return op; }
 }
 
-Exp Exp():  { Exp arg1 = null; Exp arg2 = null; String op = null; }
+Exp Exp(): { Exp arg1 = null; Exp arg2 = null; String op = null; }
 {
   arg1 = Fator() 
   (
-    op = OP() { arg1 = new EOpExp( op, arg1, arg2 ); }
-  )?
+    op = OP() arg2 = Fator() { arg1 = new EOpExp(op, arg1, arg2); }
+  )*
 
   { return arg1; }
 }
 
 Exp Fator(): { Exp fator = null; Token id = null; Token num = null; ArrayList<Exp> args = null; }
 {
+  (
+    id = <ID> { fator = new EVar(id.image); } 
     (
-      id = <ID>   { fator = new EVar(id.image); FatorAux(fator); }
+      <APARENTESES> (args = ListaExp())? <FPARENTESES> { fator = new EChamadaFun(id.image, args != null ? args : new ArrayList<Exp>()); }
+    )?
     | num = <NUM> { fator = new EFloat(Float.parseFloat(num.image)); }
-    | <TRUE>      { fator = new ETrue(); }
-    | <FALSE>     { fator = new EFalse(); }
-    )
+    | <TRUE> { fator = new ETrue(); }
+    | <FALSE> { fator = new EFalse(); }
+    | <APARENTESES> fator = Exp() <FPARENTESES>
+  )
 
-    { return fator; }
+  { return fator; }
 }
 
 void FatorAux(Exp fator):  { ArrayList<Exp> args = null; }
@@ -205,7 +232,7 @@ void FatorAux(Exp fator):  { ArrayList<Exp> args = null; }
   )?
 }
 
-ArrayList<Exp> ListaExp():  { ArrayList<Exp> lista = new ArrayList<>(); Exp exp = null; }
+ArrayList<Exp> ListaExp():  { ArrayList<Exp> lista = new ArrayList<Exp>(); Exp exp = null; }
 {
   exp = Exp() { lista.add(exp); } 
   (
