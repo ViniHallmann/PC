@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class Prog{
@@ -11,13 +11,16 @@ public class Prog{
         this.funs = funs;
     }
 
-    if (main != null) {
-        main.geraCodigo(out);
-    }
-
-    if (funs != null) {
-        for (Fun fun : funs) {
-            fun.geraCodigo(out);
+    public void geraCodigo(PrintWriter out) {
+        if (funs != null) {
+            for (Fun fun : funs) {
+                fun.geraCodigo(out);
+                out.println();
+            }
+        }
+        
+        if (main != null) {
+            main.geraCodigo(out);
         }
     }
 }

@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 
 public class CReadInput extends Comando{
 	public int linha;
@@ -11,5 +11,8 @@ public class CReadInput extends Comando{
 	  this.linha = linha;
 	  this.var = var;
 	} 
+	public void geraCodigo(PrintWriter out) {
+		out.println("scanf(\"%f\", &" + var + ");");
+	}
 
 }

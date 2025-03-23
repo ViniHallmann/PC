@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 
 public class EOpExp extends Exp{
 	public String op;
@@ -16,11 +16,9 @@ public class EOpExp extends Exp{
 	}
 
 	public void geraCodigo(PrintWriter out) {
-		out.print("(");
 		arg1.geraCodigo(out);
 		out.print(" " + op + " ");
 		arg2.geraCodigo(out);
-		out.print(")");
 	}
 
 }

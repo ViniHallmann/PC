@@ -1,6 +1,5 @@
 package ast;
-
-import java.util.ArrayList;
+import java.io.PrintWriter;
 
 public class CPrint extends Comando{
 	public int linha;
@@ -13,5 +12,10 @@ public class CPrint extends Comando{
 	  this.exp = exp;
 	  
 	} 
+	public void geraCodigo(PrintWriter out) {
+        out.print("printf(\"%f\\n\", ");
+        exp.geraCodigo(out);
+        out.println(");");
+    }
 
 }

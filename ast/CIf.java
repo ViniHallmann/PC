@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class CIf extends Comando{
@@ -14,13 +14,16 @@ public class CIf extends Comando{
 	  this.bloco = bloco;
 	} 
 
-	out.print("if (");
-    exp.geraCodigo(out);
-    out.println(") {");
 
-    for (Comando comando : bloco) {
-        comando.geraCodigo(out);
-    }
+	public void geraCodigo(PrintWriter out) {
+		out.print("if (");
+		exp.geraCodigo(out);
+		out.println(") {");
 
-    out.println("}");
+		for (Comando comando : bloco) {
+			comando.geraCodigo(out);
+		}
+
+		out.println("}");
+	}
 }

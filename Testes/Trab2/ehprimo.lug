@@ -1,0 +1,38 @@
+def bool ehPrimo(int num) {
+    let int i;
+    let bool primo;
+    let int temp;
+    primo := true;
+
+    if (num < 2) {
+        primo := false;
+    };
+
+    i := 2;
+    while (i < num) do {
+        
+        temp := num;
+        while (temp > i) do {
+            temp := (temp - i);
+        };
+        if (temp == i) {
+            primo := false;
+        };
+        i := (i + 1);
+    };
+
+    return primo;
+}
+
+void main {
+    let int num;
+    let float resultado;
+    let bool primo;
+    num := 7;
+    primo := ehPrimo(num);
+    if (primo) {
+        resultado := 1;
+    };
+
+    printIO(resultado);
+}

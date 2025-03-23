@@ -1,4 +1,5 @@
 package ast;
+import java.io.PrintWriter;
 
 
 public class CAtribuicao extends Comando{
@@ -14,9 +15,9 @@ public class CAtribuicao extends Comando{
 	} 
 
 	public void geraCodigo(PrintWriter out) {
-    out.print(var + " = ");
-    exp.geraCodigo(out);
-    out.println(";");
-}
+		out.print(var + " = ");
+		exp.geraCodigo(out);
+		out.println(";");
+	}
 
 }

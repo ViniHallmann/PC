@@ -1,0 +1,18 @@
+void main {
+    
+    let float teste;
+    let bool primeira_condicao;
+    let bool segunda_condicao;
+    let float a;
+    let float b;
+
+    a := 1.0;
+    b := 2.0;
+
+    teste := -9.98;
+    printIO teste;
+
+    if (a > b) {
+        primeira_condicao := true;
+    };
+}

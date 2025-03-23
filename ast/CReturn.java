@@ -1,6 +1,5 @@
 package ast;
-
-import java.util.ArrayList;
+import java.io.PrintWriter;
 
 public class CReturn extends Comando{
 	public int linha;
@@ -12,6 +11,11 @@ public class CReturn extends Comando{
 	  this.linha = linha;
 	  this.exp = exp;
 	  
-	} 
+	}
+	public void geraCodigo(PrintWriter out) {
+		out.print("return ");
+		exp.geraCodigo(out);
+		out.println(";");
+	}
 
 }

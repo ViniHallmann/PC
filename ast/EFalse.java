@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 
 public class EFalse extends Exp{
 	
@@ -10,7 +10,7 @@ public class EFalse extends Exp{
 	}
 
 	public void geraCodigo(PrintWriter out) {
-    	out.print(value);
+		out.print("false");
 	}
 
 }

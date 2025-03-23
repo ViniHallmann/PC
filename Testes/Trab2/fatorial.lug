@@ -1,0 +1,21 @@
+def int fatorial(int n) {
+    let int resultado;
+    resultado := 1;
+
+    while (n > 0) do {
+        resultado := (resultado * n);
+        n := (n - 1);
+    };
+
+    return resultado;
+}
+
+void main {
+    let int num;
+    let float resultado;
+
+    num := 5;
+    resultado := fatorial(num);
+
+    printIO(resultado);
+}

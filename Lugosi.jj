@@ -8,35 +8,28 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Lugosi {
-    public static void main(String args[]) throws Exception {
-      FileInputStream fs = new FileInputStream(new File(args[0]));
-      Lugosi parser = new Lugosi(fs);
+  public static void main(String args[]) throws Exception {
+    FileInputStream fs = new FileInputStream(new File(args[0]));
+    Lugosi parser = new Lugosi(fs);
 
-      Prog arvore = parser.Lugosi();
-      geraCodigo(arvore, args[0]);
-    }
+    Prog arvore = parser.Lugosi();
+    geraCodigo(arvore, args[0]);
+  }
 
-    public static void geraCodigo(Prog prog, String arquivo) {
-      try (PrintWriter out = new PrintWriter(new FileWriter(arquivo + ".c"))) {
-        // Adicionar cabeçalhos necessários para o programa C
-        out.println("#include <stdio.h>");
-        out.println("#include <stdlib.h>");
-        out.println("#include <stdbool.h>");
-        out.println();
-        
-        // Função main do C
-        out.println("int main() {");
-        
-        // Chamar o geraCodigo da árvore sintática
-        prog.geraCodigo(out);
-        
-        // Fechar a função main
-        out.println("    return 0;");
-        out.println("}");
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+  public static void geraCodigo(Prog prog, String arquivo) {
+    try (PrintWriter out = new PrintWriter(new FileWriter(arquivo + ".c"))) {
+    out.println("#include <stdio.h>");
+    out.println("#include <stdlib.h>");
+    out.println("#include <stdbool.h>");
+    out.println();
+    
+    prog.geraCodigo(out);
+      
+
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+  }
 }
 
 
@@ -100,11 +93,12 @@ TOKEN :
 
 Prog Lugosi(): { Main main = null; ArrayList<Fun> funs = new ArrayList<>(); Fun fun = null; }
 {
+  ( fun = Func() { funs.add( fun ); } )*
   main = Main() 
-  ( fun = Func() { funs.add(fun); } )?
+  
   <EOF>
 
-  { return new Prog( main,funs ); }
+  { return new Prog( main, funs ); }
 }
 
 Main Main():  { ArrayList<VarDecl> vars = null; ArrayList<Comando> coms = null; }

@@ -1,9 +1,8 @@
 package ast;
-
+import java.io.PrintWriter;
 
 public class EVar extends Exp{
 	public String var;
-	
 	
 	public EVar(String var)
 	{

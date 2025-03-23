@@ -1,0 +1,6 @@
+void main {
+    let int x;
+    let float y;
+    x := 10;
+    y := x + 5.5;
+}

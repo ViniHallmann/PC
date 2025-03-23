@@ -1,5 +1,5 @@
 package ast;
-
+import java.io.PrintWriter;
 
 public class EFloat extends Exp{
 	public float value;
@@ -10,5 +10,8 @@ public class EFloat extends Exp{
 	  this.value = value;
 	  
 	} 
+	public void geraCodigo(PrintWriter out) {
+		out.print(value);
+	}
 
 }
